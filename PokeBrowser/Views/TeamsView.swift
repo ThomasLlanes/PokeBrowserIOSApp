@@ -7,6 +7,7 @@ import SwiftUI
 
 struct TeamsView: View {
     @StateObject private var store: TeamsStore
+    @State private var pendingDeletionTeamID: PokemonTeam.ID?
 
     init(store: TeamsStore = TeamsStore()) {
         _store = StateObject(wrappedValue: store)
@@ -31,6 +32,26 @@ struct TeamsView: View {
                         TeamDetailView(team: team)
                     } label: {
                         TeamCardView(team: team)
+                    }
+                    .simultaneousGesture(
+                        LongPressGesture().onEnded { _ in
+                            pendingDeletionTeamID = team.id
+                        }
+                    )
+                    .overlay(alignment: .topTrailing) {
+                        if pendingDeletionTeamID == team.id {
+                            Button {
+                                store.delete(teamID: team.id)
+                                pendingDeletionTeamID = nil
+                            } label: {
+                                Image(systemName: "xmark.circle")
+                                    .font(.title2)
+                                    .foregroundStyle(.blue)
+                                    .padding(8)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Remove \(team.name)")
+                        }
                     }
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
