@@ -13,7 +13,6 @@ final class BerriesListViewModel: ObservableObject {
     @Published var berries: [Berry] = []
     @Published var isLoading = false
     @Published var error: String?
-    @Published var searchText: String = ""
     @Published private(set) var hasMorePages = true
 
     private let service: BerryServing
@@ -24,12 +23,6 @@ final class BerriesListViewModel: ObservableObject {
     init(service: BerryServing? = nil, cache: BerryCache? = nil) {
         self.service = service ?? BerryService()
         self.cache = cache ?? BerryCache()
-    }
-
-    var filteredBerries: [Berry] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !query.isEmpty else { return berries }
-        return berries.filter { $0.name.lowercased().contains(query) || String($0.berryId ?? -1).contains(query) }
     }
 
     func loadBerries(forceRefresh: Bool = false) async {
@@ -65,7 +58,6 @@ final class BerriesListViewModel: ObservableObject {
     }
 
     func loadNextPageIfNeeded(currentBerry: Berry?) async {
-        guard searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let currentBerry else {
             await loadBerries()
             return

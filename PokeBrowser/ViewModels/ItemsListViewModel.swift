@@ -12,7 +12,6 @@ final class ItemsListViewModel: ObservableObject {
     @Published var items: [Item] = []
     @Published var isLoading = false
     @Published var error: String?
-    @Published var searchText = ""
     @Published private(set) var hasMorePages = true
 
     private let service: ItemServing
@@ -21,15 +20,6 @@ final class ItemsListViewModel: ObservableObject {
 
     init(service: ItemServing? = nil) {
         self.service = service ?? ItemService()
-    }
-
-    var filteredItems: [Item] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !query.isEmpty else { return items }
-
-        return items.filter {
-            $0.name.lowercased().contains(query) || String($0.itemId ?? -1).contains(query)
-        }
     }
 
     func loadItems(forceRefresh: Bool = false) async {
@@ -57,7 +47,6 @@ final class ItemsListViewModel: ObservableObject {
     }
 
     func loadNextPageIfNeeded(currentItem: Item?) async {
-        guard searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard let currentItem else {
             await loadItems()
             return

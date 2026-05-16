@@ -35,7 +35,7 @@ struct BerriesListView: View {
                         Task { await viewModel.loadBerries(forceRefresh: true) }
                     }
                 }
-            } else if viewModel.berries.isEmpty && !viewModel.isLoading && viewModel.searchText.isEmpty {
+            } else if viewModel.berries.isEmpty && !viewModel.isLoading {
                 if #available(iOS 17.0, *) {
                     ContentUnavailableView("No berries", systemImage: "leaf.fill", description: Text("Try refreshing."))
                 } else {
@@ -53,7 +53,7 @@ struct BerriesListView: View {
                 }
             } else {
                 List {
-                    ForEach(viewModel.filteredBerries) { berry in
+                    ForEach(viewModel.berries) { berry in
                         NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(berry.name.displayName)
@@ -71,7 +71,7 @@ struct BerriesListView: View {
                         }
                     }
 
-                    if viewModel.isLoading && viewModel.searchText.isEmpty && !viewModel.berries.isEmpty {
+                    if viewModel.isLoading && !viewModel.berries.isEmpty {
                         HStack {
                             Spacer()
                             ProgressView()
@@ -83,7 +83,6 @@ struct BerriesListView: View {
             }
         }
         .navigationTitle("Berries")
-        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search berries")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -96,7 +95,7 @@ struct BerriesListView: View {
         }
         .task { if !disableAutoLoad { await viewModel.loadBerries() } }
         .overlay {
-            if viewModel.isLoading && viewModel.searchText.isEmpty && viewModel.berries.isEmpty {
+            if viewModel.isLoading && viewModel.berries.isEmpty {
                 ProgressView("Loading...")
             }
         }
