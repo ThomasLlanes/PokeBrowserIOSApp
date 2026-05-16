@@ -2,7 +2,7 @@
 //  PokemonService.swift
 //  PokeBrowser
 //
-//  Created by CodigoDelSur on 28/10/25.
+//  Created by Thomas Llanes on 28/10/25.
 //
 
 import Foundation

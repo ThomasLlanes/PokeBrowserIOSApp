@@ -2,7 +2,7 @@
 //  BerriesListView.swift
 //  PokeBrowser
 //
-//  Created by CodigoDelSur on 31/10/25.
+//  Created by Thomas Llanes on 31/10/25.
 //
 
 import SwiftUI

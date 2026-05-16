@@ -2,7 +2,7 @@
 //  PokemonRowView.swift
 //  PokeBrowser
 //
-//  Created by CodigoDelSur on 30/10/25.
+//  Created by Thomas Llanes on 30/10/25.
 //
 
 import SwiftUI

@@ -1,4 +1,3 @@
-// filepath: /Users/codigodelsur/Documents/Swift/PokeBrowser/PokeBrowser/Views/FavoritesView.swift
 
 import SwiftUI
 

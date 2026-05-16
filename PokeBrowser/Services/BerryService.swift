@@ -1,9 +1,8 @@
-// filepath: /Users/codigodelsur/Documents/Swift/PokeBrowser/PokeBrowser/Services/BerryService.swift
 //
 //  BerryService.swift
 //  PokeBrowser
 //
-//  Created by CodigoDelSur on 31/10/25.
+//  Created by Thomas Llanes on 31/10/25.
 //
 
 import Foundation
