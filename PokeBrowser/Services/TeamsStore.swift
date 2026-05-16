@@ -35,6 +35,11 @@ final class TeamsStore: ObservableObject {
         persist()
     }
 
+    func delete(teamID: PokemonTeam.ID) {
+        teams.removeAll { $0.id == teamID }
+        persist()
+    }
+
     private func persist() {
         guard let data = try? JSONEncoder().encode(teams) else { return }
         defaults.set(data, forKey: defaultsKey)
