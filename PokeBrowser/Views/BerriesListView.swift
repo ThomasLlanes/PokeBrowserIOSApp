@@ -28,7 +28,7 @@ struct BerriesListView: View {
                     Text("Error")
                         .font(.headline)
                     Text(error)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                         .multilineTextAlignment(.center)
                         .padding()
                     Button("Retry") {
@@ -54,22 +54,13 @@ struct BerriesListView: View {
             } else {
                 List(viewModel.filteredBerries) { berry in
                     NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(.systemGray6))
-                                    .frame(width: 40, height: 40)
-                                Image(systemName: "leaf")
-                                    .foregroundStyle(.green)
-                            }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(berry.name.capitalized)
-                                    .font(.headline)
-                                if let id = berry.berryId {
-                                    Text("#\(id)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(berry.name.displayName)
+                                .font(.headline)
+                            if let id = berry.berryId {
+                                Text("#\(id)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                         .padding(.vertical, 4)

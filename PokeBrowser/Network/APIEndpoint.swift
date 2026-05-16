@@ -12,6 +12,8 @@ enum APIEndpoint {
     case pokemonDetail(idOrName: String)
     case berryList(limit: Int)
     case berryDetail(idOrName: String)
+    case itemList(limit: Int)
+    case itemDetail(idOrName: String)
 
     private static let baseURL = URL(string: "https://pokeapi.co/api/v2")!
 
@@ -32,6 +34,12 @@ enum APIEndpoint {
                 .appending(queryItems: [.init(name: "limit", value: String(limit))])
         case .berryDetail(let idOrName):
             return Self.baseURL.appending(path: "berry/\(idOrName)")
+        case .itemList(let limit):
+            return Self.baseURL
+                .appending(path: "item")
+                .appending(queryItems: [.init(name: "limit", value: String(limit))])
+        case .itemDetail(let idOrName):
+            return Self.baseURL.appending(path: "item/\(idOrName)")
         }
     }
 }
