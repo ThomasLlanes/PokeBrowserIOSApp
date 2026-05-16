@@ -55,16 +55,41 @@ struct PokemonSprites: Codable {
     let backDefault: String?
     let backShiny: String?
 
-    var displaySprites: [(name: String, url: URL)] {
+    var displaySpriteGroups: [PokemonSpriteGroup] {
         [
-            ("Front", frontDefault),
-            ("Shiny Front", frontShiny),
-            ("Back", backDefault),
-            ("Shiny Back", backShiny)
-        ].compactMap { name, value in
-            guard let value, let url = URL(string: value) else { return nil }
-            return (name, url)
-        }
+            spriteGroup(
+                id: "default",
+                title: "Default",
+                front: frontDefault,
+                back: backDefault
+            ),
+            spriteGroup(
+                id: "shiny",
+                title: "Shiny",
+                front: frontShiny,
+                back: backShiny
+            )
+        ].compactMap { $0 }
+    }
+
+    private func spriteGroup(
+        id: String,
+        title: String,
+        front: String?,
+        back: String?
+    ) -> PokemonSpriteGroup? {
+        let sprites = [
+            sprite(id: "\(id)-front", title: "Front", value: front),
+            sprite(id: "\(id)-back", title: "Back", value: back)
+        ].compactMap { $0 }
+
+        guard !sprites.isEmpty else { return nil }
+        return PokemonSpriteGroup(id: id, title: title, sprites: sprites)
+    }
+
+    private func sprite(id: String, title: String, value: String?) -> PokemonSprite? {
+        guard let value, let url = URL(string: value) else { return nil }
+        return PokemonSprite(id: id, title: title, url: url)
     }
 
     enum CodingKeys: String, CodingKey {
@@ -73,6 +98,18 @@ struct PokemonSprites: Codable {
         case backDefault = "back_default"
         case backShiny = "back_shiny"
     }
+}
+
+struct PokemonSpriteGroup: Identifiable {
+    let id: String
+    let title: String
+    let sprites: [PokemonSprite]
+}
+
+struct PokemonSprite: Identifiable {
+    let id: String
+    let title: String
+    let url: URL
 }
 
 struct PokemonTypeSlot: Codable {

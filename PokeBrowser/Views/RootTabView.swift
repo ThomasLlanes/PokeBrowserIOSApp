@@ -20,6 +20,8 @@ struct RootTabView: View {
                     Text("Pokémon")
                 } icon: {
                     Image("poke-ball")
+                        .resizable()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
                 }
             }
             .tag(Tab.pokemon)
@@ -30,7 +32,13 @@ struct RootTabView: View {
                     .toolbar(.visible, for: .navigationBar)
             }
             .tabItem {
-                Label("Berries", systemImage: "leaf.fill")
+                Label {
+                    Text("Berries")
+                } icon: {
+                    Image("Bag_Sitrus_Berry_Sprite")
+                        .resizable()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
+                }
             }
             .tag(Tab.berries)
 
@@ -39,7 +47,14 @@ struct RootTabView: View {
                     .toolbar(.visible, for: .navigationBar)
             }
             .tabItem {
-                Label("Items Docs", systemImage: "bag.fill")
+                Label {
+                    Text("Items")
+                } icon: {
+                    Image("leftovers")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
+                }
             }
             .tag(Tab.items)
 

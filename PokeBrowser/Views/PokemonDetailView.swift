@@ -31,7 +31,7 @@ struct PokemonDetailView: View {
                 Section {
                     HStack {
                         Spacer()
-                        PokemonSpriteGalleryView(sprites: detail.sprites.displaySprites)
+                        PokemonSpriteGalleryView(spriteGroups: detail.sprites.displaySpriteGroups)
                         Spacer()
                     }
                     .listRowBackground(Color.clear)
@@ -108,36 +108,52 @@ struct PokemonDetailView: View {
 }
 
 private struct PokemonSpriteGalleryView: View {
-    let sprites: [(name: String, url: URL)]
-
-    private let columns = [
-        GridItem(.adaptive(minimum: 96), spacing: 12)
-    ]
+    let spriteGroups: [PokemonSpriteGroup]
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(sprites, id: \.name) { sprite in
-                VStack(spacing: 8) {
-                    AsyncImage(url: sprite.url) { image in
-                        image
-                            .resizable()
-                            .interpolation(.none)
-                            .scaledToFit()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .frame(width: 88, height: 88)
-                    .accessibilityLabel(sprite.name)
-
-                    if sprites.count > 1 {
-                        Text(sprite.name)
+        LazyVStack(spacing: Dimens.spacingMedium) {
+            ForEach(spriteGroups) { group in
+                VStack(spacing: Dimens.spacingSmall) {
+                    if spriteGroups.count > 1 {
+                        Text(group.title)
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+
+                    HStack(spacing: Dimens.spacingMedium) {
+                        ForEach(group.sprites) { sprite in
+                            PokemonSpriteView(groupTitle: group.title, sprite: sprite)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
             }
         }
+    }
+}
+
+private struct PokemonSpriteView: View {
+    let groupTitle: String
+    let sprite: PokemonSprite
+
+    var body: some View {
+        VStack(spacing: Dimens.spacingSmall) {
+            AsyncImage(url: sprite.url) { image in
+                image
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(width: 88, height: 88)
+            .accessibilityLabel("\(groupTitle) \(sprite.title)")
+
+            Text(sprite.title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
