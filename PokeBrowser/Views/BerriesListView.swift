@@ -1,0 +1,112 @@
+//
+//  BerriesListView.swift
+//  PokeBrowser
+//
+//  Created by CodigoDelSur on 31/10/25.
+//
+
+import SwiftUI
+
+struct BerriesListView: View {
+    @StateObject private var viewModel: BerriesListViewModel
+    private let disableAutoLoad: Bool
+
+    init() {
+        _viewModel = StateObject(wrappedValue: BerriesListViewModel())
+        self.disableAutoLoad = false
+    }
+
+    init(viewModel: BerriesListViewModel, disableAutoLoad: Bool = false) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.disableAutoLoad = disableAutoLoad
+    }
+
+    var body: some View {
+        Group {
+            if let error = viewModel.error {
+                VStack(spacing: 16) {
+                    Text("Error")
+                        .font(.headline)
+                    Text(error)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                    Button("Retry") {
+                        Task { await viewModel.loadBerries(forceRefresh: true) }
+                    }
+                }
+            } else if viewModel.berries.isEmpty && !viewModel.isLoading && viewModel.searchText.isEmpty {
+                if #available(iOS 17.0, *) {
+                    ContentUnavailableView("No berries", systemImage: "leaf.fill", description: Text("Try refreshing."))
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "leaf.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
+                        Text("No berries")
+                            .font(.headline)
+                        Text("Try refreshing.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            } else {
+                List(viewModel.filteredBerries) { berry in
+                    NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(.systemGray6))
+                                    .frame(width: 40, height: 40)
+                                Image(systemName: "leaf")
+                                    .foregroundStyle(.green)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(berry.name.capitalized)
+                                    .font(.headline)
+                                if let id = berry.berryId {
+                                    Text("#\(id)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                .listStyle(.insetGrouped)
+            }
+        }
+        .navigationTitle("Berries")
+        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search berries")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    Task { await viewModel.loadBerries(forceRefresh: true) }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .accessibilityLabel("Refresh")
+            }
+        }
+        .task { if !disableAutoLoad { await viewModel.loadBerries() } }
+        .overlay {
+            if viewModel.isLoading && viewModel.searchText.isEmpty {
+                ProgressView("Loading...")
+            }
+        }
+    }
+}
+
+#Preview("Berries List - Sample") {
+    let vm = BerriesListViewModel()
+    vm.berries = [
+        Berry(name: "oran", url: "https://pokeapi.co/api/v2/berry/1/"),
+        Berry(name: "sitrus", url: "https://pokeapi.co/api/v2/berry/2/"),
+        Berry(name: "pecha", url: "https://pokeapi.co/api/v2/berry/3/")
+    ]
+    vm.isLoading = false
+    vm.error = nil
+    return NavigationStack { BerriesListView(viewModel: vm, disableAutoLoad: true) }
+}
