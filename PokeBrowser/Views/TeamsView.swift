@@ -27,8 +27,12 @@ struct TeamsView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(store.teams) { team in
-                    TeamCardView(team: team)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    NavigationLink {
+                        TeamDetailView(team: team)
+                    } label: {
+                        TeamCardView(team: team)
+                    }
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
                 .onDelete(perform: store.delete)
             }
@@ -43,19 +47,11 @@ private struct TeamCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(team.name)
-                    .font(.headline)
-                    .lineLimit(1)
+            Text(team.name)
+                .font(.headline)
+                .lineLimit(1)
 
-                Spacer()
-
-                Text("\(team.slots.count)/6")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 8) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                 ForEach(team.slots) { slot in
                     TeamSlotSummaryView(slot: slot)
                 }
@@ -69,28 +65,66 @@ private struct TeamSlotSummaryView: View {
     let slot: PokemonTeamSlot
 
     var body: some View {
+        TeamPokemonSpriteWithItem(pokemon: slot.pokemon, item: slot.heldItem, size: 58)
+            .frame(maxWidth: .infinity)
+            .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        if let item = slot.heldItem {
+            return "\(slot.pokemon.name.displayName) holding \(item.name.displayName)"
+        }
+        return "\(slot.pokemon.name.displayName) holding no item"
+    }
+}
+
+private struct TeamDetailView: View {
+    let team: PokemonTeam
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(team.slots) { slot in
+                    TeamDetailSlotRow(slot: slot)
+                }
+            } header: {
+                Text("\(team.slots.count)/6 Pokémon")
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(team.name)
+    }
+}
+
+private struct TeamDetailSlotRow: View {
+    let slot: PokemonTeamSlot
+
+    var body: some View {
         HStack(spacing: 12) {
             TeamPokemonSpriteWithItem(pokemon: slot.pokemon, item: slot.heldItem, size: 58)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(slot.pokemon.name.displayName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline)
                     .lineLimit(1)
 
-                if let item = slot.heldItem {
-                    Text(item.name.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                } else {
-                    Text("No item")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                HStack(spacing: 8) {
+                    if let item = slot.heldItem {
+                        HeldItemBadge(item: item)
+                        Text(item.name.displayName)
+                    } else {
+                        Image(systemName: "bag")
+                            .foregroundStyle(.secondary)
+                        Text("No item")
+                    }
                 }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             }
 
             Spacer()
         }
+        .padding(.vertical, 4)
     }
 }
 
