@@ -52,18 +52,31 @@ struct BerriesListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
-                List(viewModel.filteredBerries) { berry in
-                    NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(berry.name.displayName)
-                                .font(.headline)
-                            if let id = berry.berryId {
-                                Text("#\(id)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                List {
+                    ForEach(viewModel.filteredBerries) { berry in
+                        NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(berry.name.displayName)
+                                    .font(.headline)
+                                if let id = berry.berryId {
+                                    Text("#\(id)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
+                        .task {
+                            await viewModel.loadNextPageIfNeeded(currentBerry: berry)
+                        }
+                    }
+
+                    if viewModel.isLoading && viewModel.searchText.isEmpty && !viewModel.berries.isEmpty {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -83,7 +96,7 @@ struct BerriesListView: View {
         }
         .task { if !disableAutoLoad { await viewModel.loadBerries() } }
         .overlay {
-            if viewModel.isLoading && viewModel.searchText.isEmpty {
+            if viewModel.isLoading && viewModel.searchText.isEmpty && viewModel.berries.isEmpty {
                 ProgressView("Loading...")
             }
         }

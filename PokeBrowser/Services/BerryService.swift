@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BerryServing {
-    func fetchBerryList() async throws -> [Berry]
+    func fetchBerryList(limit: Int, offset: Int) async throws -> [Berry]
     func fetchBerryDetail(idOrName: String) async throws -> BerryDetail
 }
 
@@ -19,8 +19,8 @@ final class BerryService: BerryServing {
         self.apiClient = apiClient
     }
 
-    func fetchBerryList() async throws -> [Berry] {
-        let decoded: PokeAPIListResponse<Berry> = try await apiClient.get(.berryList(limit: 64))
+    func fetchBerryList(limit: Int, offset: Int) async throws -> [Berry] {
+        let decoded: PokeAPIListResponse<Berry> = try await apiClient.get(.berryList(limit: limit, offset: offset))
         return decoded.results
     }
 

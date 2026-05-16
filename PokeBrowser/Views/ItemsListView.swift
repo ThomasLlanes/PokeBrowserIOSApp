@@ -51,9 +51,22 @@ struct ItemsListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
-                List(viewModel.filteredItems) { item in
-                    NavigationLink(destination: ItemDetailView(item: item)) {
-                        ItemRowView(item: item)
+                List {
+                    ForEach(viewModel.filteredItems) { item in
+                        NavigationLink(destination: ItemDetailView(item: item)) {
+                            ItemRowView(item: item)
+                        }
+                        .task {
+                            await viewModel.loadNextPageIfNeeded(currentItem: item)
+                        }
+                    }
+
+                    if viewModel.isLoading && viewModel.searchText.isEmpty && !viewModel.items.isEmpty {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -73,7 +86,7 @@ struct ItemsListView: View {
         }
         .task { if !disableAutoLoad { await viewModel.loadItems() } }
         .overlay {
-            if viewModel.isLoading && viewModel.searchText.isEmpty {
+            if viewModel.isLoading && viewModel.searchText.isEmpty && viewModel.items.isEmpty {
                 ProgressView("Loading...")
             }
         }

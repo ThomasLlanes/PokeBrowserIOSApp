@@ -7,7 +7,7 @@
 import Foundation
 
 protocol ItemServing {
-    func fetchItemList() async throws -> [Item]
+    func fetchItemList(limit: Int, offset: Int) async throws -> [Item]
     func fetchItemDetail(idOrName: String) async throws -> ItemDetail
 }
 
@@ -18,8 +18,8 @@ final class ItemService: ItemServing {
         self.apiClient = apiClient
     }
 
-    func fetchItemList() async throws -> [Item] {
-        let decoded: PokeAPIListResponse<Item> = try await apiClient.get(.itemList(limit: 200))
+    func fetchItemList(limit: Int, offset: Int) async throws -> [Item] {
+        let decoded: PokeAPIListResponse<Item> = try await apiClient.get(.itemList(limit: limit, offset: offset))
         return decoded.results
     }
 
