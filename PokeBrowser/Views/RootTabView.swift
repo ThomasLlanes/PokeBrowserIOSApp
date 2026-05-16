@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootTabView: View {
-    enum Tab: Hashable { case pokemon, berries, favorites }
+    enum Tab: Hashable { case pokemon, berries, items, favorites }
     
     @State private var selectedTab: Tab
     
@@ -16,7 +16,13 @@ struct RootTabView: View {
                     .toolbar(.visible, for: .navigationBar)
             }
             .tabItem {
-                Label("Pokémon", systemImage: "pawprint.fill")
+                Label {
+                    Text("Pokémon")
+                } icon: {
+                    Image("poke-ball")
+                        .resizable()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
+                }
             }
             .tag(Tab.pokemon)
 
@@ -26,9 +32,31 @@ struct RootTabView: View {
                     .toolbar(.visible, for: .navigationBar)
             }
             .tabItem {
-                Label("Berries", systemImage: "leaf.fill")
+                Label {
+                    Text("Berries")
+                } icon: {
+                    Image("Bag_Sitrus_Berry_Sprite")
+                        .resizable()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
+                }
             }
             .tag(Tab.berries)
+
+            NavigationStack {
+                ItemsListView()
+                    .toolbar(.visible, for: .navigationBar)
+            }
+            .tabItem {
+                Label {
+                    Text("Items")
+                } icon: {
+                    Image("leftovers")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: Dimens.iconMedium, height: Dimens.iconMedium)
+                }
+            }
+            .tag(Tab.items)
 
             NavigationStack {
                 FavoritesView()

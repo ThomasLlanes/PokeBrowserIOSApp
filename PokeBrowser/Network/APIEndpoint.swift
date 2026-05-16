@@ -10,8 +10,10 @@ import Foundation
 enum APIEndpoint {
     case pokemonList(limit: Int, offset: Int)
     case pokemonDetail(idOrName: String)
-    case berryList(limit: Int)
+    case berryList(limit: Int, offset: Int)
     case berryDetail(idOrName: String)
+    case itemList(limit: Int, offset: Int)
+    case itemDetail(idOrName: String)
 
     private static let baseURL = URL(string: "https://pokeapi.co/api/v2")!
 
@@ -26,12 +28,24 @@ enum APIEndpoint {
                 ])
         case .pokemonDetail(let idOrName):
             return Self.baseURL.appending(path: "pokemon/\(idOrName)")
-        case .berryList(let limit):
+        case .berryList(let limit, let offset):
             return Self.baseURL
                 .appending(path: "berry")
-                .appending(queryItems: [.init(name: "limit", value: String(limit))])
+                .appending(queryItems: [
+                    .init(name: "limit", value: String(limit)),
+                    .init(name: "offset", value: String(offset))
+                ])
         case .berryDetail(let idOrName):
             return Self.baseURL.appending(path: "berry/\(idOrName)")
+        case .itemList(let limit, let offset):
+            return Self.baseURL
+                .appending(path: "item")
+                .appending(queryItems: [
+                    .init(name: "limit", value: String(limit)),
+                    .init(name: "offset", value: String(offset))
+                ])
+        case .itemDetail(let idOrName):
+            return Self.baseURL.appending(path: "item/\(idOrName)")
         }
     }
 }

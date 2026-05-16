@@ -9,60 +9,151 @@ import SwiftUI
 
 struct PokemonDetailView: View {
     let pokemon: Pokemon
+    @StateObject private var viewModel: PokemonDetailViewModel
     @EnvironmentObject private var favorites: FavoritesStore
+    private let disableAutoLoad: Bool
 
-    private var spriteURL: URL? {
-        guard let id = pokemon.pokemonId else { return nil }
-        return URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png")
+    init(pokemon: Pokemon, disableAutoLoad: Bool = false) {
+        self.pokemon = pokemon
+        _viewModel = StateObject(wrappedValue: PokemonDetailViewModel())
+        self.disableAutoLoad = disableAutoLoad
+    }
+
+    init(pokemon: Pokemon, viewModel: PokemonDetailViewModel, disableAutoLoad: Bool) {
+        self.pokemon = pokemon
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.disableAutoLoad = disableAutoLoad
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray6))
-                    .frame(height: 200)
-                if let url = spriteURL {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFit()
-                    } placeholder: {
-                        ProgressView()
+        List {
+            if let detail = viewModel.detail {
+                Section {
+                    HStack {
+                        Spacer()
+                        PokemonSpriteGalleryView(spriteGroups: detail.sprites.displaySpriteGroups)
+                        Spacer()
                     }
-                    .frame(height: 180)
-                } else {
-                    Image(systemName: "questionmark.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundColor(.secondary)
-                        .frame(height: 100)
+                    .listRowBackground(Color.clear)
+                }
+
+                Section(header: Text("Overview")) {
+                    LabeledContent("Name", value: detail.name.displayName)
+                    LabeledContent("ID", value: "#\(detail.id)")
+                    LabeledContent("Height", value: "\(detail.height)")
+                    LabeledContent("Weight", value: "\(detail.weight)")
+                    if let baseExperience = detail.baseExperience {
+                        LabeledContent("Base experience", value: "\(baseExperience)")
+                    }
+                }
+
+                Section(header: Text("Types")) {
+                    ForEach(detail.types.sorted(by: { $0.slot < $1.slot }), id: \.slot) { typeSlot in
+                        Text(typeSlot.type.name.displayName)
+                    }
+                }
+
+                Section(header: Text("Abilities")) {
+                    ForEach(detail.abilities, id: \.ability.name) { abilitySlot in
+                        LabeledContent(
+                            abilitySlot.ability.name.displayName,
+                            value: abilitySlot.isHidden ? "Hidden" : "Standard"
+                        )
+                    }
+                }
+
+                Section(header: Text("Stats")) {
+                    ForEach(detail.stats) { stat in
+                        LabeledContent(stat.stat.name.displayName, value: "\(stat.baseStat)")
+                    }
+                }
+            } else if let error = viewModel.error {
+                Section {
+                    Text(error)
+                        .foregroundStyle(.red)
+                }
+            } else if viewModel.isLoading {
+                Section {
+                    HStack {
+                        Spacer()
+                        ProgressView("Loading...")
+                        Spacer()
+                    }
                 }
             }
-            
-            Text(pokemon.name.capitalized)
-                .font(.largeTitle.bold())
-                .padding(.top, 4)
-            
-            if let id = pokemon.pokemonId {
-                Text("#\(id)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
         }
-        .padding()
-        .navigationTitle(pokemon.name.capitalized)
+        .navigationTitle(pokemon.name.displayName)
+        .task { if !disableAutoLoad { await viewModel.load(for: pokemon) } }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     favorites.toggle(name: pokemon.name)
                 } label: {
                     Image(systemName: favorites.isFavorite(name: pokemon.name) ? "star.fill" : "star")
-                        .foregroundColor(favorites.isFavorite(name: pokemon.name) ? .yellow : .primary)
+                        .foregroundStyle(favorites.isFavorite(name: pokemon.name) ? .yellow : .primary)
                 }
                 .accessibilityLabel(favorites.isFavorite(name: pokemon.name) ? "Remove from favorites" : "Add to favorites")
             }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    Task { await viewModel.load(for: pokemon) }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .accessibilityLabel("Refresh")
+            }
         }
+    }
+}
+
+private struct PokemonSpriteGalleryView: View {
+    let spriteGroups: [PokemonSpriteGroup]
+
+    var body: some View {
+        LazyVStack(spacing: Dimens.spacingMedium) {
+            ForEach(spriteGroups) { group in
+                VStack(spacing: Dimens.spacingSmall) {
+                    if spriteGroups.count > 1 {
+                        Text(group.title)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    HStack(spacing: Dimens.spacingMedium) {
+                        ForEach(group.sprites) { sprite in
+                            PokemonSpriteView(groupTitle: group.title, sprite: sprite)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+    }
+}
+
+private struct PokemonSpriteView: View {
+    let groupTitle: String
+    let sprite: PokemonSprite
+
+    var body: some View {
+        VStack(spacing: Dimens.spacingSmall) {
+            AsyncImage(url: sprite.url) { image in
+                image
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(width: 88, height: 88)
+            .accessibilityLabel("\(groupTitle) \(sprite.title)")
+
+            Text(sprite.title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

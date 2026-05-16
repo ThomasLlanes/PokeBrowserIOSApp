@@ -28,7 +28,7 @@ struct BerriesListView: View {
                     Text("Error")
                         .font(.headline)
                     Text(error)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                         .multilineTextAlignment(.center)
                         .padding()
                     Button("Retry") {
@@ -52,18 +52,11 @@ struct BerriesListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
-                List(viewModel.filteredBerries) { berry in
-                    NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
-                        HStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(.systemGray6))
-                                    .frame(width: 40, height: 40)
-                                Image(systemName: "leaf")
-                                    .foregroundStyle(.green)
-                            }
+                List {
+                    ForEach(viewModel.filteredBerries) { berry in
+                        NavigationLink(destination: BerryDetailView(berry: berry, disableAutoLoad: false)) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(berry.name.capitalized)
+                                Text(berry.name.displayName)
                                     .font(.headline)
                                 if let id = berry.berryId {
                                     Text("#\(id)")
@@ -71,8 +64,19 @@ struct BerriesListView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
+                        .task {
+                            await viewModel.loadNextPageIfNeeded(currentBerry: berry)
+                        }
+                    }
+
+                    if viewModel.isLoading && viewModel.searchText.isEmpty && !viewModel.berries.isEmpty {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -92,7 +96,7 @@ struct BerriesListView: View {
         }
         .task { if !disableAutoLoad { await viewModel.loadBerries() } }
         .overlay {
-            if viewModel.isLoading && viewModel.searchText.isEmpty {
+            if viewModel.isLoading && viewModel.searchText.isEmpty && viewModel.berries.isEmpty {
                 ProgressView("Loading...")
             }
         }

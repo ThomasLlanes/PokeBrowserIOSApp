@@ -15,7 +15,11 @@ struct ContentView: View {
                     .toolbar(.visible, for: .navigationBar)
             }
             .tabItem {
-                Label("Pokémon", systemImage: "pawprint.fill")
+                Label {
+                    Text("Pokémon")
+                } icon: {
+                    Image("poke-ball")
+                }
             }
             
             NavigationStack {
@@ -25,6 +29,14 @@ struct ContentView: View {
             }
             .tabItem {
                 Label("Berries", systemImage: "leaf.fill")
+            }
+
+            NavigationStack {
+                ItemsListView()
+                    .toolbar(.visible, for: .navigationBar)
+            }
+            .tabItem {
+                Label("Items Docs", systemImage: "bag.fill")
             }
             
             NavigationStack {
