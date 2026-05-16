@@ -33,7 +33,7 @@ struct PokemonListView: View {
                             PokemonRowView(
                                 pokemon: pokemon,
                                 isFavorite: favorites.isFavorite(name: pokemon.name),
-                                onToggleFavorite: { favorites.toggle(name: pokemon.name) }
+                                onToggleFavorite: { favorites.toggle(pokemon: pokemon) }
                             )
                         }
                         .task {

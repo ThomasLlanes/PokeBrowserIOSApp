@@ -4,8 +4,8 @@ import SwiftUI
 struct FavoritesView: View {
     @EnvironmentObject private var favorites: FavoritesStore
 
-    private var sortedFavorites: [String] {
-        Array(favorites.favorites).sorted()
+    private var sortedFavorites: [FavoritePokemon] {
+        favorites.favorites.sorted { $0.name < $1.name }
     }
 
     var body: some View {
@@ -29,13 +29,10 @@ struct FavoritesView: View {
                 }
             } else {
                 List {
-                    ForEach(sortedFavorites, id: \.self) { name in
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .foregroundStyle(.yellow)
-                            Text(name.capitalized)
+                    ForEach(sortedFavorites) { favorite in
+                        NavigationLink(destination: PokemonDetailView(pokemon: favorite.pokemon)) {
+                            FavoritePokemonRow(favorite: favorite)
                         }
-                        .accessibilityElement(children: .combine)
                     }
                     .onDelete(perform: delete)
                 }
@@ -47,7 +44,51 @@ struct FavoritesView: View {
     }
 
     private func delete(at offsets: IndexSet) {
-        for index in offsets { favorites.toggle(name: sortedFavorites[index]) }
+        for index in offsets {
+            favorites.remove(sortedFavorites[index])
+        }
+    }
+}
+
+private struct FavoritePokemonRow: View {
+    let favorite: FavoritePokemon
+
+    private var imageURL: URL? {
+        guard let imageURL = favorite.imageURL else { return nil }
+        return URL(string: imageURL)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(.systemGray6))
+                    .frame(width: 56, height: 56)
+
+                if let imageURL {
+                    AsyncImage(url: imageURL) { image in
+                        image
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                    } placeholder: {
+                        ProgressView().scaleEffect(0.8)
+                    }
+                    .frame(width: 48, height: 48)
+                } else {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(.yellow)
+                        .frame(width: 48, height: 48)
+                }
+            }
+
+            Text(favorite.name.displayName)
+                .font(.headline)
+
+            Spacer()
+        }
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
     }
 }
 

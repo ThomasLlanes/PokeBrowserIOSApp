@@ -87,7 +87,7 @@ struct PokemonDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    favorites.toggle(name: pokemon.name)
+                    favorites.toggle(pokemon: pokemon)
                 } label: {
                     Image(systemName: favorites.isFavorite(name: pokemon.name) ? "star.fill" : "star")
                         .foregroundStyle(favorites.isFavorite(name: pokemon.name) ? .yellow : .primary)
