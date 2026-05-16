@@ -2,7 +2,6 @@
 //  Dimens.swift
 //  PokeBrowser
 //
-//  Created by CodigoDelSur on 16/5/26.
 //
 
 import CoreGraphics
