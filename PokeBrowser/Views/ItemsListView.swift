@@ -34,7 +34,7 @@ struct ItemsListView: View {
                         Task { await viewModel.loadItems(forceRefresh: true) }
                     }
                 }
-            } else if viewModel.items.isEmpty && !viewModel.isLoading && viewModel.searchText.isEmpty {
+            } else if viewModel.items.isEmpty && !viewModel.isLoading {
                 if #available(iOS 17.0, *) {
                     ContentUnavailableView("No items", systemImage: "bag.fill", description: Text("Try refreshing."))
                 } else {
@@ -52,7 +52,7 @@ struct ItemsListView: View {
                 }
             } else {
                 List {
-                    ForEach(viewModel.filteredItems) { item in
+                    ForEach(viewModel.items) { item in
                         NavigationLink(destination: ItemDetailView(item: item)) {
                             ItemRowView(item: item)
                         }
@@ -61,7 +61,7 @@ struct ItemsListView: View {
                         }
                     }
 
-                    if viewModel.isLoading && viewModel.searchText.isEmpty && !viewModel.items.isEmpty {
+                    if viewModel.isLoading && !viewModel.items.isEmpty {
                         HStack {
                             Spacer()
                             ProgressView()
@@ -73,7 +73,6 @@ struct ItemsListView: View {
             }
         }
         .navigationTitle("Items Documentation")
-        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search items")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -86,7 +85,7 @@ struct ItemsListView: View {
         }
         .task { if !disableAutoLoad { await viewModel.loadItems() } }
         .overlay {
-            if viewModel.isLoading && viewModel.searchText.isEmpty && viewModel.items.isEmpty {
+            if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView("Loading...")
             }
         }
